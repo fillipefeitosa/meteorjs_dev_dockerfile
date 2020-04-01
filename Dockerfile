@@ -8,13 +8,8 @@ ARG APP_LOCALE=en_US
 ARG APP_CHARSET=UTF-8
 ARG APP_USER=meteor
 ARG APP_USER_DIR=/home/${APP_USER}
-ARG APP_UPLOAD_DIR=/var/www/${APP_NAME}/public
-
-# run environment
-ENV APP_PORT=${APP_PORT:-3000}
-
-# exposed ports and volumes
-EXPOSE $APP_PORT
+# Public Upload Dir is usefull for packages like OSTRIO files
+ARG APP_UPLOAD_DIR=/var/www/${APP_NAME}/public 
 
 # add packages for building NPM modules (required by Meteor)
 RUN DEBIAN_FRONTEND=noninteractive apt-get update && \
@@ -46,9 +41,17 @@ RUN cd /home/${APP_USER} && mkdir app
 # We copy the app in the said folder.
 COPY . /home/${APP_USER}/app/.
 
-
 # install Meteor
 RUN curl https://install.meteor.com/?release=1.8.3 | sh
 
+WORKDIR $APP_USER_DIR/app/
+RUN echo $PWD
+
+# run environment
+ENV APP_PORT=${APP_PORT:-3000}
+
+# exposed ports and volumes
+EXPOSE $APP_PORT
+
 # run Meteor from the app directory
-CMD cd /home/${APP_USER}/app/ && meteor
+ENTRYPOINT ["meteor"]
